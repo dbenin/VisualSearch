@@ -1,0 +1,6 @@
+﻿# .gitignore
+/bin
+/bld
+/platforms
+/plugins
+/res
