@@ -1,5 +1,6 @@
 {
-    "name": "VisualSearch",
-    "dependencies": {
-    }
+  "name": "VisualSearch",
+  "dependencies": {
+    "ionic": "1.2.4"
+  }
 }
