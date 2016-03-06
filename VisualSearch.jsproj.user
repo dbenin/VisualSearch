@@ -5,7 +5,7 @@
     <AndroidEmulatorID>AndroidDevice;Device</AndroidEmulatorID>
   </PropertyGroup>
   <PropertyGroup>
-    <ShowAllFiles>true</ShowAllFiles>
+    <ShowAllFiles>false</ShowAllFiles>
     <ReferenceCachePath>C:\Users\repti\AppData\Local\Temp\VisualSearch_refcache</ReferenceCachePath>
   </PropertyGroup>
 </Project>

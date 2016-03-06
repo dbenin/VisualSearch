@@ -10,15 +10,36 @@
         <meta name="format-detection" content="telephone=no">
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
-        <link rel="stylesheet" type="text/css" href="css/index.css">
+
+        <link href="lib/ionic/release/css/ionic.css" rel="stylesheet" />
+
+        <script src="lib/ionic/release/js/ionic.bundle.js"></script>
+        <script src="scripts/app.js"></script>
+
+        <script type="text/javascript" src="scripts/platformOverrides.js"></script>
+        <script type="text/javascript" src="cordova.js"></script>
+
         <title>VisualSearch</title>
     </head>
-    <body>
-        <div class="app">
-            <p id="deviceready" class="event">Connecting to Device</p>
-        </div>
-        <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="scripts/platformOverrides.js"></script>
-        <script type="text/javascript" src="scripts/index.js"></script>
+    <body ng-app="VisualSearch">
+        <ion-side-menus>
+
+            <!-- Center content -->
+            <ion-side-menu-content>
+                <ion-header-bar class="bar-positive">
+                    <h1 class="title">Visual Search App</h1>
+                </ion-header-bar>
+                <ion-content>
+                </ion-content>
+            </ion-side-menu-content>
+
+            <!-- Left menu -->
+            <ion-side-menu side="left">
+                <ion-header-bar class="bar-positive">
+                    <h1 class="title">Services</h1>
+                </ion-header-bar>
+            </ion-side-menu>
+
+        </ion-side-menus>
     </body>
 </html>
