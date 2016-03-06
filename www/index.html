@@ -21,15 +21,25 @@
 
         <title>VisualSearch</title>
     </head>
-    <body ng-app="VisualSearch">
+    <body ng-app="VisualSearch" ng-controller="MainController">
         <ion-side-menus>
 
             <!-- Center content -->
             <ion-side-menu-content>
                 <ion-header-bar class="bar-positive">
-                    <h1 class="title">Visual Search App</h1>
+                    <h1 class="title">Todo</h1>
+                    <!-- New Task button-->
+                    <button class="button button-icon" ng-click="newTask()">
+                        <i class="icon ion-android-settings"></i>
+                    </button>
                 </ion-header-bar>
                 <ion-content>
+                    <!-- our list and list items -->
+                    <ion-list>
+                        <ion-item ng-repeat="task in tasks">
+                            {{task.title}}
+                        </ion-item>
+                    </ion-list>
                 </ion-content>
             </ion-side-menu-content>
 
