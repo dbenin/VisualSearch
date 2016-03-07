@@ -43,8 +43,7 @@
         .success(function (data) {
             console.log("Funziona!");
             $scope.results = data;
-            console.log(data.images.length);
-            console.log(data.searchId);
+            $scope.showResults();
         });
     };
 
@@ -55,9 +54,16 @@
         $ionicSideMenuDelegate.toggleLeft(false);
     };
 
-    // Create our modal
+    // Create settings modal
     $ionicModal.fromTemplateUrl('templates/settings.html', function (modal) {
         $scope.settingsModal = modal;
+    }, {
+        scope: $scope
+    });
+
+    // Create results modal
+    $ionicModal.fromTemplateUrl('templates/results.html', function (modal) {
+        $scope.resultsModal = modal;
     }, {
         scope: $scope
     });
@@ -82,7 +88,15 @@
 
     $scope.closeSettings = function () {
         $scope.settingsModal.hide();
-    }
+    };
+
+    $scope.showResults = function () {
+        $scope.resultsModal.show();
+    };
+
+    $scope.closeResults = function () {
+        $scope.resultsModal.hide();
+    };
 
     $scope.toggleServices = function () {
         $ionicSideMenuDelegate.toggleLeft();

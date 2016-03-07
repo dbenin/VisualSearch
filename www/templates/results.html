@@ -1,0 +1,21 @@
+﻿<div class="modal">
+
+    <!-- Modal header bar -->
+    <ion-header-bar class="bar-secondary">
+        <h1 class="title">Results</h1>
+        <button class="button button-clear button-positive" ng-click="closeResults()">Back</button>
+    </ion-header-bar>
+
+    <!-- Modal content area -->
+    <ion-content>
+
+        <ion-list>
+            <ion-item ng-repeat="result in results.images" class="item-thumbnail-left">
+                <img ng-src="{{result.imageUrl}}">
+                <a ng-href="{{result.pageUrl}}">{{result.title}}</a>
+            </ion-item>
+        </ion-list>
+
+    </ion-content>
+
+</div>
