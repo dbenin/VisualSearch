@@ -5,7 +5,7 @@
     <AndroidEmulatorID>AndroidDevice;Device</AndroidEmulatorID>
   </PropertyGroup>
   <PropertyGroup>
-    <ShowAllFiles>false</ShowAllFiles>
+    <ShowAllFiles>true</ShowAllFiles>
     <ReferenceCachePath>C:\Users\stage1\AppData\Local\Temp\n25vwrlf_VisualSearch_refcache</ReferenceCachePath>
   </PropertyGroup>
 </Project>
