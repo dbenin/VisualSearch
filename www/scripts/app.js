@@ -84,7 +84,7 @@
     // Grab the last active, or the first service
     //$scope.activeService = $scope.services[Services.getLastActiveIndex()];
     $scope.activeService = $scope.services[0];
-    $scope.activeSet = $scope.services[0].sets[0]
+    $scope.activeSet = $scope.services[0].sets[0];
 
     $scope.getPhoto = function (album) {
         $scope.results = {};
@@ -185,6 +185,8 @@
                     break;
             }
 
+        }, function (err) {
+            alert(err);
         });
     };
 
