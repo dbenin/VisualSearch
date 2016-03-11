@@ -158,7 +158,7 @@
                             // GOOGLE CLOUD VISION
                             $http({
                                 method: "POST",
-                                data: '{"requests":[{"image":{"content":"' + base64Img.slice(23) + '"},"features":[{"type":"' + $scope.activeSet.value + '","maxResults":5}]}]}',
+                                data: '{"requests":[{"image":{"content":"' + base64Img.substr(base64Img.indexOf(',') + 1) + '"},"features":[{"type":"' + $scope.activeSet.value + '","maxResults":5}]}]}',
                                 url: "https://vision.googleapis.com/v1/images:annotate?key=" + $scope.activeService.key
                             }).success(function (result) {
                                 console.log("SUCCESS");
