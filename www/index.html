@@ -45,6 +45,29 @@
                             <button ng-click="getPhoto(true)" class="button button-block button-positive">Carica</button>
                         </div>
                         <img ng-src="{{lastPhoto}}" style="max-width: 100%">
+
+                        <!--JustVisual-->
+                        <ion-list>
+                            <ion-item ng-repeat="result in results.images" class="item-thumbnail-left">
+                                <img ng-src="{{result.imageUrl}}">
+                                <a ng-href="{{result.pageUrl}}">{{result.title}}</a>
+                            </ion-item>
+                        </ion-list>
+
+                        <!--MetaMind-->
+                        <ion-list>
+                            <ion-item ng-repeat="prediction in results.predictions">
+                                <p>Prediction: {{prediction.class_name}}, prob. {{(prediction.prob * 100).toFixed(1)}}%</p>
+                            </ion-item>
+                        </ion-list>
+
+                        <!--Google Cloud Vision-->
+                        <ion-list>
+                            <ion-item ng-repeat="label in results.responses[0].labelAnnotations">
+                                <p>Label: {{label.description}}, prob. {{(label.score * 100).toFixed(1)}}%</p>
+                            </ion-item>
+                        </ion-list>
+
                     </div>
                 </ion-content>
             </ion-side-menu-content>

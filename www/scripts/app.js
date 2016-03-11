@@ -32,18 +32,7 @@
     };
 }])
 
-.factory("Search", ['$http', function ($http) {
-    return {
-        googleCloudVision: function (imgUrl, settings) {
-            return $http({
-                method: "GET",
-                url: settings.server + "api-search/by-url?url=" + imgUrl + "&apikey=" + settings.key
-            });
-        }
-    };
-}])
-
-.controller('MainController', function ($scope, $ionicModal, Camera, $ionicSideMenuDelegate) {
+.controller('MainController', function ($scope, $ionicModal, Camera, $http, $ionicSideMenuDelegate) {
 
     // Load or initialize services
     $scope.services = [
@@ -98,6 +87,73 @@
             $scope.lastPhoto = imageURI;
 
             //
+            switch ($scope.activeService.name) {
+                case "MetaMind":
+                case "GoogleCloudVision":
+                    // base64 econding needed
+                    var toDataUrl = function (url, callback, outputFormat) {
+                        var img = new Image();
+                        img.crossOrigin = 'Anonymous';
+                        img.onload = function () {
+                            var canvas = document.createElement('CANVAS');
+                            var ctx = canvas.getContext('2d');
+                            var dataURL;
+                            canvas.height = this.height;
+                            canvas.width = this.width;
+                            ctx.drawImage(this, 0, 0);
+                            dataURL = canvas.toDataURL(outputFormat);
+                            callback(dataURL);
+                            canvas = null;
+                        };
+                        img.src = url;
+                    };
+                    toDataUrl(imageURI, function (base64Img) {
+                        // Base64DataURL
+                        console.log("Base64 image: " + base64Img);
+                        if ($scope.activeService.name === "MetaMind") {
+                            // METAMIND
+                            var classifier = $scope.activeSet.value;
+                            if ($scope.activeSet.name !== "Custom Classifier") {
+                                classifier = '"' + classifier + '"';
+                            }
+                            $http.defaults.headers.common.Authorization = "Basic " + $scope.activeService.key;
+                            $http({
+                                method: "POST",
+                                data: '{"classifier_id":' + classifier + ', "image_url": "' + base64Img + '"}',
+                                url: "https://www.metamind.io/vision/classify"
+                            }).success(function (result) {
+                                console.log("SUCCESS");
+                                $scope.results = result;
+                                console.log(result);
+                            }).error(function (err) {
+                                console.log("FAIL");
+                                console.log(err);
+                                alert(err);
+                            });
+                        }
+                        else {
+                            // GOOGLE CLOUD VISION
+                            $http({
+                                method: "POST",
+                                data: '{"requests":[{"image":{"content":"' + base64Img.slice(23) + '"},"features":[{"type":"' + $scope.activeSet.value + '","maxResults":5}]}]}',
+                                url: "https://vision.googleapis.com/v1/images:annotate?key=" + $scope.activeService.key
+                            }).success(function (result) {
+                                console.log("SUCCESS");
+                                $scope.results = result;
+                                console.log(result);
+                            }).error(function (err) {
+                                alert(err.error.message);
+                                console.log("FAIL");
+                                console.log(err);
+                                alert(err);
+                            });
+                        }
+
+                    }, "image/jpeg");
+                    break;
+                case "JustVisual":
+                    console.log("justvisual here");
+            }
 
         });
     };
@@ -108,6 +164,9 @@
         $scope.activeSet = service.sets[index];
         //console.log("Active service: " + $scope.activeService.name);
         //Services.setLastActiveIndex(index);
+
+        $scope.results = {};
+
         $ionicSideMenuDelegate.toggleLeft(false);
     };
 
