@@ -4,7 +4,7 @@
  * from local storage, and also lets us save and load the
  * last active project index.
  */
-.factory("Services", function () {
+/*.factory("Services", function () {
     return {
         getLastActiveIndex: function () {
             return parseInt(window.localStorage['lastActiveService']) || 0;
@@ -13,44 +13,101 @@
             window.localStorage['lastActiveService'] = index;
         }
     };
-})
+})*/
 
-.factory("JustVisual", ['$http', function ($http) {
+.factory("Camera", ['$q', function ($q) {
     return {
-        searchByUrl: function (imgUrl, settings) {
+        getPicture: function (options) {
+            var q = $q.defer();
+
+            navigator.camera.getPicture(function (result) {
+                //
+                q.resolve(result);
+            }, function (err) {
+                q.reject(err);
+            }, options);
+
+            return q.promise;
+        }
+    };
+}])
+
+.factory("Search", ['$http', function ($http) {
+    return {
+        googleCloudVision: function (imgUrl, settings) {
             return $http({
                 method: "GET",
                 url: settings.server + "api-search/by-url?url=" + imgUrl + "&apikey=" + settings.key
             });
         }
-    }
+    };
 }])
 
-.controller('MainController', function ($scope, $timeout, $ionicModal, Services, JustVisual, $ionicSideMenuDelegate) {
+.controller('MainController', function ($scope, $ionicModal, Camera, $ionicSideMenuDelegate) {
 
     // Load or initialize services
     $scope.services = [
-        { name: "JustVisual", settings: { key: "8b502b94-24f6-4b97-b33e-a78ad605da31", server: "http://decor.vsapi01.com/" } },
-        { name: "CloudSight", settings: {} }
+        {
+            name: "GoogleCloudVision", key: "AIzaSyA3CSP33Kkj0FN1ypV7UeS_BhEcQjqLzsI", sets: [
+                { name: "Label Detection", value: "LABEL_DETECTION" }
+            ]
+        },
+        {
+            name: "MetaMind", key: "T2e0GexSpnGDPmxU4xj6kktMx89yl3aGxSGOd9jljRTe19xFYW", sets: [
+                { name: "General Classifier", value: "imagenet-1k-net" },
+                { name: "Food Classifier", value: "food-net" },
+                { name: "Custom Classifier", value: 41291 }
+            ]
+        },
+        {
+            name: "JustVisual", key: "8b502b94-24f6-4b97-b33e-a78ad605da31", sets: [
+                { name: "Fashion", value: "http://style.vsapi01.com" },
+                { name: "Flowers & Plants", value: "http://garden.vsapi01.com" },
+                { name: "Furniture", value: "http://decor.vsapi01.com" },
+                { name: "Pet", value: "http://pets.vsapi01.com" }
+            ]
+        }
     ];
 
     // Grab the last active, or the first service
-    $scope.activeService = $scope.services[Services.getLastActiveIndex()];
+    //$scope.activeService = $scope.services[Services.getLastActiveIndex()];
+    $scope.activeService = $scope.services[0];
+    $scope.activeSet = $scope.services[0].sets[0]
 
-    $scope.results = {};
-    $scope.getResults = function () {
-        JustVisual.searchByUrl("http://myofficeideas.com/wp-content/uploads/2012/05/Leather-Office-Executive-Swivel-Chair.jpg", $scope.activeService.settings)
-        .success(function (data) {
-            console.log("Funziona!");
-            $scope.results = data;
-            $scope.showResults();
+    $scope.getPhoto = function (album) {
+        $scope.results = {};
+        // Setting the options object to take a picture either from album or camera
+        var options = { // Common options
+            destinationType: navigator.camera.DestinationType.FILE_URI, // DATA_URL, FILE_URI, NATIVE_URI
+            targetWidth: 320,
+            targetHeight: 320
+        };
+        if (album) { // From album
+            options.sourceType = navigator.camera.PictureSourceType.SAVEDPHOTOALBUM; // PHOTOLIBRARY, CAMERA, SAVEDPHOTOALBUM
+            options.mediaType = navigator.camera.MediaType.PICTURE;  // PICTURE, VIDEO, ALLMEDIA
+        }
+        else { // From camera
+            options.quality = 50; // 0-100
+            options.sourceType = navigator.camera.PictureSourceType.CAMERA; // PHOTOLIBRARY, CAMERA, SAVEDPHOTOALBUM
+            options.encodingType = navigator.camera.EncodingType.JPEG; // JPEG, PNG
+            options.correctOrientation = true;
+            options.saveToPhotoAlbum = false;
+        }
+        Camera.getPicture(options).then(function (imageURI) {
+            console.log("Picture taken: " + imageURI);
+            $scope.lastPhoto = imageURI;
+
+            //
+
         });
     };
 
     // Called to select the given service
     $scope.selectService = function (service, index) {
         $scope.activeService = service;
-        Services.setLastActiveIndex(index);
+        $scope.activeSet = service.sets[index];
+        //console.log("Active service: " + $scope.activeService.name);
+        //Services.setLastActiveIndex(index);
         $ionicSideMenuDelegate.toggleLeft(false);
     };
 
@@ -72,7 +129,6 @@
         if (!$scope.activeService || !settings) {
             return;
         }
-        console.log("Si settings!!");
         $scope.activeService.settings.key = settings.key;
         $scope.settingsModal.hide();
 

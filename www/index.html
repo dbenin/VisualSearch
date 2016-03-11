@@ -36,11 +36,15 @@
                         <i class="icon ion-gear-a"></i>
                     </button>
                 </ion-header-bar>
-                <ion-content scroll="false">
+                <ion-content>
                     <div class="padding">
-                        <h1 class="title">Active service: {{activeService.name}}</h1>
-                        <button ng-click="getResults()" class="button button-block button-positive">Search by URL</button>
-                        <p>Last search ID: {{results.searchId}}</p>
+                        <h1 class="title">{{activeService.name}}</h1>
+                        <h2>{{activeSet.name}}</h2>
+                        <div class="button-bar">
+                            <button ng-click="getPhoto(false)" class="button button-block button-positive">Scatta</button>
+                            <button ng-click="getPhoto(true)" class="button button-block button-positive">Carica</button>
+                        </div>
+                        <img ng-src="{{lastPhoto}}" style="max-width: 100%">
                     </div>
                 </ion-content>
             </ion-side-menu-content>
@@ -52,8 +56,11 @@
                 </ion-header-bar>
                 <ion-content scroll="false">
                     <ion-list>
-                        <ion-item ng-repeat="service in services" ng-click="selectService(service, $index)" ng-class="{active: activeService == service}">
+                        <ion-item class="item-divider" ng-repeat="service in services">
                             {{service.name}}
+                            <ion-item ng-repeat="set in service.sets" ng-click="selectService(service, $index)" ng-class="{active: activeService == set.name}">
+                                {{set.name}}
+                            </ion-item>
                         </ion-item>
                     </ion-list>
                 </ion-content>
