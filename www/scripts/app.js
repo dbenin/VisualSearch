@@ -32,7 +32,30 @@
     };
 }])
 
-.controller('MainController', function ($scope, $ionicModal, Camera, $http, $ionicSideMenuDelegate) {
+.factory("Search", ['$q', function ($q) {
+    return {
+        justVisual: function (fileURI, key, server) {
+            var q = $q.defer();
+
+            var win = function (r) { q.resolve(r); };
+            var fail = function (err) { q.reject(err); };
+
+            var options = new FileUploadOptions();
+            options.fileKey = "file";
+            options.fileName = fileURI.substr(fileURI.lastIndexOf('/') + 1);
+            options.mimeType = "image/jpeg";
+            options.httpMethod = "POST";
+            options.params = {}; // if we need to send parameters to the server request
+
+            var ft = new FileTransfer();
+            ft.upload(fileURI, encodeURI(server + "/api-search?apikey=" + key), win, fail, options, true);
+
+            return q.promise;
+        }
+    };
+}])
+
+.controller('MainController', function ($scope, $ionicModal, Camera, Search, $http, $ionicSideMenuDelegate) {
 
     // Load or initialize services
     $scope.services = [
@@ -90,7 +113,7 @@
             switch ($scope.activeService.name) {
                 case "MetaMind":
                 case "GoogleCloudVision":
-                    // base64 econding needed
+                    // base64 encoding needed
                     var toDataUrl = function (url, callback, outputFormat) {
                         var img = new Image();
                         img.crossOrigin = 'Anonymous';
@@ -152,7 +175,14 @@
                     }, "image/jpeg");
                     break;
                 case "JustVisual":
-                    console.log("justvisual here");
+                    Search.justVisual(imageURI, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
+                        $scope.results = JSON.parse(result.response);
+                        //console.log($scope.results);
+                    }, function (err) {
+                        console.log(err);
+                        alert(err);
+                    });
+                    break;
             }
 
         });

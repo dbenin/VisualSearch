@@ -81,7 +81,7 @@
                     <ion-list>
                         <ion-item class="item-divider" ng-repeat="service in services">
                             {{service.name}}
-                            <ion-item ng-repeat="set in service.sets" ng-click="selectService(service, $index)" ng-class="{active: activeService == set.name}">
+                            <ion-item ng-repeat="set in service.sets" ng-click="selectService(service, $index)" ng-class="{active: activeSet.name == set.name}">
                                 {{set.name}}
                             </ion-item>
                         </ion-item>
