@@ -1,8 +1,8 @@
 ﻿# .gitignore
 /bin
 /bld
+/bower_components
 /platforms
 /plugins
 /res
-/www/lib
 /VisualSearch.jsproj.user
