@@ -1,0 +1,3 @@
+﻿Camera.DestinationType DATA_URL per Google e MetaMind
+opt mantenere le foto?
+opt key
