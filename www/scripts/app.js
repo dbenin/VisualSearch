@@ -34,8 +34,26 @@ angular.module("VisualSearch", ["ionic"])
     };
 }])
 
-.factory("Search", ['$q', function ($q) {
+.factory("Search", ['$q', '$http', function ($q, $http) {
     return {
+        googleCloudVision: function (image, key, type) {
+            return $http({
+                method: "POST",
+                data: '{"requests":[{"image":{"content":"' + image + '"},"features":[{"type":"' + type + '","maxResults":5}]}]}',
+                url: "https://vision.googleapis.com/v1/images:annotate?key=" + key
+            });
+        },
+        metaMind: function (image, key, classifier) {
+            if (isNaN(classifier)) {//aggiungo le virgolette al classifier se non e' custom (quindi non e' un numero ma una stringa)
+                classifier = '"' + classifier + '"';
+            }
+            $http.defaults.headers.common.Authorization = "Basic " + key;
+            return $http({
+                method: "POST",
+                data: '{"classifier_id":' + classifier + ', "image_url": "' + image + '"}',
+                url: "https://www.metamind.io/vision/classify"
+            });
+        },
         justVisual: function (fileURI, key, server) {
             var q = $q.defer();
 
@@ -57,7 +75,7 @@ angular.module("VisualSearch", ["ionic"])
     };
 }])
 
-.controller('MainController', function ($scope, $ionicModal, Camera, Search, $http, $ionicSideMenuDelegate, $ionicLoading) {
+.controller('MainController', function ($scope, $ionicModal, Camera, Search, $ionicSideMenuDelegate, $ionicLoading) {
 
     // Load or initialize services
     $scope.services = [
@@ -122,8 +140,6 @@ angular.module("VisualSearch", ["ionic"])
             options.correctOrientation = false;
             options.saveToPhotoAlbum = $scope.settings.saveToAlbum;
         }
-        //console.log("Save: " + options.saveToPhotoAlbum);
-        //console.log("Servizio: " + $scope.activeService.name);
         if ($scope.activeService.name != "JustVisual") {
             options.destinationType = navigator.camera.DestinationType.DATA_URL; // DATA_URL, FILE_URI, NATIVE_URI
         }
@@ -139,44 +155,28 @@ angular.module("VisualSearch", ["ionic"])
                 $scope.lastPhoto = image;
             }
             console.log("Scope: " + $scope.lastPhoto);
+
             $scope.showLoading($ionicLoading);
+
             switch ($scope.activeService.name) {
-                case "MetaMind":
-                    var classifier = $scope.activeSet.value;
-                    if ($scope.activeSet.name != "Custom Classifier") {//aggiungo le virgolette al classifier se non e' custom
-                        classifier = '"' + classifier + '"';
-                    }
-                    $http.defaults.headers.common.Authorization = "Basic " + $scope.activeService.key;
-                    $http({
-                        method: "POST",
-                        data: '{"classifier_id":' + classifier + ', "image_url": "' + $scope.lastPhoto + '"}',
-                        url: "https://www.metamind.io/vision/classify"
-                    }).success(function (result) {
-                        console.log("SUCCESS");
-                        $scope.results = result;
+                case "GoogleCloudVision":
+                    Search.googleCloudVision(image, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
+                        $scope.results = result.data;
                         console.log(result);
-                    }).error(function (err) {
-                        console.log("FAIL");
+                    }, function (err) {
                         console.log(err);
-                        alert(err.message);
+                        alert(err.error.message);
                     }).finally(function () {
                         $scope.hideLoading($ionicLoading);
                     });
-                    break;   
-                case "GoogleCloudVision":
-                    $http({
-                        method: "POST",
-                        data: '{"requests":[{"image":{"content":"' + image + '"},"features":[{"type":"' + $scope.activeSet.value + '","maxResults":5}]}]}',
-                        url: "https://vision.googleapis.com/v1/images:annotate?key=" + $scope.activeService.key
-                    }).success(function (result) {
-                        console.log("SUCCESS");
-                        $scope.results = result;
+                    break;
+                case "MetaMind":
+                    Search.metaMind($scope.lastPhoto, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
+                        $scope.results = result.data;
                         console.log(result);
-                    }).error(function (err) {
-                        alert(err.error.message);
-                        console.log("FAIL");
+                    }, function (err) {
                         console.log(err);
-                        alert(err);
+                        alert(err.message);
                     }).finally(function () {
                         $scope.hideLoading($ionicLoading);
                     });
@@ -195,7 +195,7 @@ angular.module("VisualSearch", ["ionic"])
         }, function (err) {
             alert(err);
         }).finally(function () {
-            
+            //
         });
     };
 
