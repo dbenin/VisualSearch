@@ -90,7 +90,7 @@
         $scope.results = {};
         // Setting the options object to take a picture either from album or camera
         var options = { // Common options
-            destinationType: navigator.camera.DestinationType.FILE_URI, // DATA_URL, FILE_URI, NATIVE_URI
+            //destinationType: navigator.camera.DestinationType.FILE_URI, // DATA_URL, FILE_URI, NATIVE_URI
             targetWidth: 320,
             targetHeight: 320
         };
@@ -105,77 +105,62 @@
             options.correctOrientation = true;
             options.saveToPhotoAlbum = false;
         }
-        Camera.getPicture(options).then(function (imageURI) {
-            console.log("Picture taken: " + imageURI);
-            $scope.lastPhoto = imageURI;
+        console.log("Servizio: " + $scope.activeService.name);
+        if ($scope.activeService.name === ("GoogleCloudVision" || "MetaMind")) {
+            options.destinationType = navigator.camera.DestinationType.DATA_URL; // DATA_URL, FILE_URI, NATIVE_URI
+        }
+        else {
+            options.destinationType = navigator.camera.DestinationType.FILE_URI; // DATA_URL, FILE_URI, NATIVE_URI
+        }
+        Camera.getPicture(options).then(function (image) {
+            console.log("Image: " + image);
+            if ($scope.activeService.name !== "JustVisual") {
+                $scope.lastPhoto = "data:image/jpeg;base64," + image;
+            }
+            else {
+                $scope.lastPhoto = image;
+            }
+            console.log("Scope: " + $scope.lastPhoto);
 
-            //
             switch ($scope.activeService.name) {
                 case "MetaMind":
+                    var classifier = $scope.activeSet.value;
+                    if ($scope.activeSet.name !== "Custom Classifier") {
+                        classifier = '"' + classifier + '"';
+                    }
+                    $http.defaults.headers.common.Authorization = "Basic " + $scope.activeService.key;
+                    $http({
+                        method: "POST",
+                        data: '{"classifier_id":' + classifier + ', "image_url": "' + $scope.lastPhoto + '"}',
+                        url: "https://www.metamind.io/vision/classify"
+                    }).success(function (result) {
+                        console.log("SUCCESS");
+                        $scope.results = result;
+                        console.log(result);
+                    }).error(function (err) {
+                        console.log("FAIL");
+                        console.log(err);
+                        alert(err.message);
+                    });
+                    break;   
                 case "GoogleCloudVision":
-                    // base64 encoding needed
-                    var toDataUrl = function (url, callback, outputFormat) {
-                        var img = new Image();
-                        img.crossOrigin = 'Anonymous';
-                        img.onload = function () {
-                            var canvas = document.createElement('CANVAS');
-                            var ctx = canvas.getContext('2d');
-                            var dataURL;
-                            canvas.height = this.height;
-                            canvas.width = this.width;
-                            ctx.drawImage(this, 0, 0);
-                            dataURL = canvas.toDataURL(outputFormat);
-                            callback(dataURL);
-                            canvas = null;
-                        };
-                        img.src = url;
-                    };
-                    toDataUrl(imageURI, function (base64Img) {
-                        // Base64DataURL
-                        console.log("Base64 image: " + base64Img);
-                        if ($scope.activeService.name === "MetaMind") {
-                            // METAMIND
-                            var classifier = $scope.activeSet.value;
-                            if ($scope.activeSet.name !== "Custom Classifier") {
-                                classifier = '"' + classifier + '"';
-                            }
-                            $http.defaults.headers.common.Authorization = "Basic " + $scope.activeService.key;
-                            $http({
-                                method: "POST",
-                                data: '{"classifier_id":' + classifier + ', "image_url": "' + base64Img + '"}',
-                                url: "https://www.metamind.io/vision/classify"
-                            }).success(function (result) {
-                                console.log("SUCCESS");
-                                $scope.results = result;
-                                console.log(result);
-                            }).error(function (err) {
-                                console.log("FAIL");
-                                console.log(err);
-                                alert(err);
-                            });
-                        }
-                        else {
-                            // GOOGLE CLOUD VISION
-                            $http({
-                                method: "POST",
-                                data: '{"requests":[{"image":{"content":"' + base64Img.substr(base64Img.indexOf(',') + 1) + '"},"features":[{"type":"' + $scope.activeSet.value + '","maxResults":5}]}]}',
-                                url: "https://vision.googleapis.com/v1/images:annotate?key=" + $scope.activeService.key
-                            }).success(function (result) {
-                                console.log("SUCCESS");
-                                $scope.results = result;
-                                console.log(result);
-                            }).error(function (err) {
-                                alert(err.error.message);
-                                console.log("FAIL");
-                                console.log(err);
-                                alert(err);
-                            });
-                        }
-
-                    }, "image/jpeg");
+                    $http({
+                        method: "POST",
+                        data: '{"requests":[{"image":{"content":"' + image + '"},"features":[{"type":"' + $scope.activeSet.value + '","maxResults":5}]}]}',
+                        url: "https://vision.googleapis.com/v1/images:annotate?key=" + $scope.activeService.key
+                    }).success(function (result) {
+                        console.log("SUCCESS");
+                        $scope.results = result;
+                        console.log(result);
+                    }).error(function (err) {
+                        alert(err.error.message);
+                        console.log("FAIL");
+                        console.log(err);
+                        alert(err);
+                    });
                     break;
                 case "JustVisual":
-                    Search.justVisual(imageURI, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
+                    Search.justVisual(image, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
                         $scope.results = JSON.parse(result.response);
                         //console.log($scope.results);
                     }, function (err) {
@@ -184,7 +169,6 @@
                     });
                     break;
             }
-
         }, function (err) {
             alert(err);
         });
