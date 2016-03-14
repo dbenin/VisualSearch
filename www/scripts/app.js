@@ -74,6 +74,7 @@ angular.module("VisualSearch", ["ionic"])
         },
         cloudSight: function (image, key) {
             console.log("CS image: " + image);
+            //http://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
             var dataURItoBlob = function (dataURI) {
                 // convert base64/URLEncoded data component to raw binary data held in a string
                 /*var byteString;
