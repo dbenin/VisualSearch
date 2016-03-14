@@ -1,19 +1,21 @@
-﻿angular.module("VisualSearch", ["ionic"])
+﻿"use strict";
+
+angular.module("VisualSearch", ["ionic"])
 /**
  * The Projects factory handles saving and loading projects
  * from local storage, and also lets us save and load the
  * last active project index.
  */
-/*.factory("Services", function () {
+.factory("Storage", function () {
     return {
         getLastActiveIndex: function () {
             return parseInt(window.localStorage['lastActiveService']) || 0;
         },
-        setLastActiveIndex: function (index) {
+        setLastActive: function (index) {
             window.localStorage['lastActiveService'] = index;
         }
     };
-})*/
+})
 
 .factory("Camera", ['$q', function ($q) {
     return {
@@ -55,7 +57,7 @@
     };
 }])
 
-.controller('MainController', function ($scope, $ionicModal, Camera, Search, $http, $ionicSideMenuDelegate) {
+.controller('MainController', function ($scope, $ionicModal, Camera, Search, $http, $ionicSideMenuDelegate, $ionicLoading) {
 
     // Load or initialize services
     $scope.services = [
@@ -81,10 +83,21 @@
         }
     ];
 
-    // Grab the last active, or the first service
-    //$scope.activeService = $scope.services[Services.getLastActiveIndex()];
+    // Grab the last active, or the first service and set
+    //$scope.activeService = $scope.services[Storage.getLastActiveService()];
+    //$scope.activeSet = $scope.activeService.sets[Storage.getLastActiveSet()];
     $scope.activeService = $scope.services[0];
     $scope.activeSet = $scope.services[0].sets[0];
+
+    $scope.showLoading = function () {
+        $ionicLoading.show({
+            template: '<p>Searching...</p><ion-spinner icon="android" class="spinner-dark"></ion-spinner>'
+        });
+    };
+
+    $scope.hideLoading = function () {
+        $ionicLoading.hide();
+    };
 
     $scope.getPhoto = function (album) {
         $scope.results = {};
@@ -105,8 +118,8 @@
             options.correctOrientation = true;
             options.saveToPhotoAlbum = false;
         }
-        console.log("Servizio: " + $scope.activeService.name);
-        if ($scope.activeService.name === ("GoogleCloudVision" || "MetaMind")) {
+        //console.log("Servizio: " + $scope.activeService.name);
+        if ($scope.activeService.name != "JustVisual") {
             options.destinationType = navigator.camera.DestinationType.DATA_URL; // DATA_URL, FILE_URI, NATIVE_URI
         }
         else {
@@ -114,14 +127,14 @@
         }
         Camera.getPicture(options).then(function (image) {
             console.log("Image: " + image);
-            if ($scope.activeService.name !== "JustVisual") {
+            if ($scope.activeService.name != "JustVisual") {
                 $scope.lastPhoto = "data:image/jpeg;base64," + image;
             }
             else {
                 $scope.lastPhoto = image;
             }
             console.log("Scope: " + $scope.lastPhoto);
-
+            $scope.showLoading($ionicLoading);
             switch ($scope.activeService.name) {
                 case "MetaMind":
                     var classifier = $scope.activeSet.value;
@@ -141,6 +154,8 @@
                         console.log("FAIL");
                         console.log(err);
                         alert(err.message);
+                    }).finally(function () {
+                        $scope.hideLoading($ionicLoading);
                     });
                     break;   
                 case "GoogleCloudVision":
@@ -157,20 +172,25 @@
                         console.log("FAIL");
                         console.log(err);
                         alert(err);
+                    }).finally(function () {
+                        $scope.hideLoading($ionicLoading);
                     });
                     break;
                 case "JustVisual":
                     Search.justVisual(image, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
                         $scope.results = JSON.parse(result.response);
-                        //console.log($scope.results);
                     }, function (err) {
                         console.log(err);
                         alert(err);
+                    }).finally(function () {
+                        $scope.hideLoading($ionicLoading);
                     });
                     break;
             }
         }, function (err) {
             alert(err);
+        }).finally(function () {
+            
         });
     };
 
