@@ -72,7 +72,19 @@
                         <!--LANDMARK-->
                         <ion-list>
                             <ion-item ng-repeat="landmark in results.responses[0].landmarkAnnotations">
-                                <p>Label: {{landmark.description}}, prob. {{(landmark.score * 100).toFixed(1)}}%</p>
+                                <p>Landmark: {{landmark.description}}, prob. {{(landmark.score * 100).toFixed(1)}}%</p>
+                            </ion-item>
+                        </ion-list>
+                        <!--LOGO-->
+                        <ion-list>
+                            <ion-item ng-repeat="logo in results.responses[0].logoAnnotations">
+                                <p>Logo: {{logo.description}}, prob. {{(logo.score * 100).toFixed(1)}}%</p>
+                            </ion-item>
+                        </ion-list>
+                        <!--TEXT-->
+                        <ion-list>
+                            <ion-item ng-repeat="text in results.responses[0].textAnnotations">
+                                <p>Text: {{text.description}}, locale: {{text.locale}}</p>
                             </ion-item>
                         </ion-list>
 

@@ -64,7 +64,9 @@ angular.module("VisualSearch", ["ionic"])
         {
             name: "GoogleCloudVision", key: "AIzaSyA3CSP33Kkj0FN1ypV7UeS_BhEcQjqLzsI", sets: [
                 { name: "Label Detection", value: "LABEL_DETECTION" },
-                { name: "Landmark Detection", value: "LANDMARK_DETECTION" }
+                { name: "Landmark Detection", value: "LANDMARK_DETECTION" },
+                { name: "Logo Detection", value: "LOGO_DETECTION" },
+                { name: "Text Detection", value: "TEXT_DETECTION" }
             ]
         },
         {
