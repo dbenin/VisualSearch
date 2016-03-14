@@ -63,9 +63,16 @@
                         </ion-list>
 
                         <!--Google Cloud Vision-->
+                        <!--LABEL-->
                         <ion-list>
                             <ion-item ng-repeat="label in results.responses[0].labelAnnotations">
                                 <p>Label: {{label.description}}, prob. {{(label.score * 100).toFixed(1)}}%</p>
+                            </ion-item>
+                        </ion-list>
+                        <!--LANDMARK-->
+                        <ion-list>
+                            <ion-item ng-repeat="landmark in results.responses[0].landmarkAnnotations">
+                                <p>Label: {{landmark.description}}, prob. {{(landmark.score * 100).toFixed(1)}}%</p>
                             </ion-item>
                         </ion-list>
 
