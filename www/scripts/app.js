@@ -71,6 +71,25 @@ angular.module("VisualSearch", ["ionic"])
             ft.upload(fileURI, encodeURI(server + "/api-search?apikey=" + key), win, fail, options, true);
 
             return q.promise;
+        },
+        cloudSight: function (fileURI, key) {
+            var q = $q.defer();
+
+            var win = function (r) { q.resolve(r); };
+            var fail = function (err) { q.reject(err); };
+
+            var options = new FileUploadOptions();
+            options.fileKey = "file";
+            options.fileName = fileURI.substr(fileURI.lastIndexOf('/') + 1);
+            options.mimeType = "image/jpeg";
+            options.httpMethod = "POST";
+            options.params = { "image_request[image]": "@"+options.filename, "image_request[locale]": "en-US" };
+            options.headers = { "Authorization": "CloudSight " + key };
+
+            var ft = new FileTransfer();
+            ft.upload(fileURI, encodeURI("https://api.cloudsightapi.com/image_requests"), win, fail, options, true);
+
+            return q.promise;
         }
     };
 }])
@@ -79,6 +98,11 @@ angular.module("VisualSearch", ["ionic"])
 
     // Load or initialize services
     $scope.services = [
+        {
+            name: "CloudSight", key: "Q-mo9tM_bf4fGlaJaAoZ8g", sets: [
+                { name: "Product", value: "" }
+            ]
+        },
         {
             name: "GoogleCloudVision", key: "AIzaSyA3CSP33Kkj0FN1ypV7UeS_BhEcQjqLzsI", sets: [
                 { name: "Label Detection", value: "LABEL_DETECTION" },
@@ -140,7 +164,7 @@ angular.module("VisualSearch", ["ionic"])
             options.correctOrientation = false;
             options.saveToPhotoAlbum = $scope.settings.saveToAlbum;
         }
-        if ($scope.activeService.name != "JustVisual") {
+        if (($scope.activeService.name === "GoogleCloudVision") || ($scope.activeService.name === "MetaMind")) {
             options.destinationType = navigator.camera.DestinationType.DATA_URL; // DATA_URL, FILE_URI, NATIVE_URI
         }
         else {
@@ -148,7 +172,7 @@ angular.module("VisualSearch", ["ionic"])
         }
         Camera.getPicture(options).then(function (image) {
             console.log("Image: " + image);
-            if ($scope.activeService.name != "JustVisual") {
+            if (($scope.activeService.name === "GoogleCloudVision") || ($scope.activeService.name === "MetaMind")) {
                 $scope.lastPhoto = "data:image/jpeg;base64," + image;
             }
             else {
@@ -183,6 +207,16 @@ angular.module("VisualSearch", ["ionic"])
                     break;
                 case "JustVisual":
                     Search.justVisual(image, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
+                        $scope.results = JSON.parse(result.response);
+                    }, function (err) {
+                        console.log(err);
+                        alert(err);
+                    }).finally(function () {
+                        $scope.hideLoading($ionicLoading);
+                    });
+                    break;
+                case "CloudSight":
+                    Search.cloudSight(image, $scope.activeService.key).then(function (result) {
                         $scope.results = JSON.parse(result.response);
                     }, function (err) {
                         console.log(err);
