@@ -82,6 +82,7 @@ angular.module("VisualSearch", ["ionic"])
             ]
         }
     ];
+    $scope.settings = { saveToAlbum: false };
 
     // Grab the last active, or the first service and set
     //$scope.activeService = $scope.services[Storage.getLastActiveService()];
@@ -115,9 +116,10 @@ angular.module("VisualSearch", ["ionic"])
             options.quality = 50; // 0-100
             options.sourceType = navigator.camera.PictureSourceType.CAMERA; // PHOTOLIBRARY, CAMERA, SAVEDPHOTOALBUM
             options.encodingType = navigator.camera.EncodingType.JPEG; // JPEG, PNG
-            options.correctOrientation = true;
-            options.saveToPhotoAlbum = false;
+            options.correctOrientation = false;
+            options.saveToPhotoAlbum = $scope.settings.saveToAlbum;
         }
+        //console.log("Save: " + options.saveToPhotoAlbum);
         //console.log("Servizio: " + $scope.activeService.name);
         if ($scope.activeService.name != "JustVisual") {
             options.destinationType = navigator.camera.DestinationType.DATA_URL; // DATA_URL, FILE_URI, NATIVE_URI
@@ -138,7 +140,7 @@ angular.module("VisualSearch", ["ionic"])
             switch ($scope.activeService.name) {
                 case "MetaMind":
                     var classifier = $scope.activeSet.value;
-                    if ($scope.activeSet.name !== "Custom Classifier") {
+                    if ($scope.activeSet.name != "Custom Classifier") {//aggiungo le virgolette al classifier se non e' custom
                         classifier = '"' + classifier + '"';
                     }
                     $http.defaults.headers.common.Authorization = "Basic " + $scope.activeService.key;
