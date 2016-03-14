@@ -72,8 +72,67 @@ angular.module("VisualSearch", ["ionic"])
 
             return q.promise;
         },
-        cloudSight: function (fileURI, key) {
+        cloudSight: function (image, key) {
+            console.log("CS image: " + image);
+            var dataURItoBlob = function (dataURI) {
+                // convert base64/URLEncoded data component to raw binary data held in a string
+                /*var byteString;
+                if (dataURI.split(',')[0].indexOf('base64') >= 0)
+                    byteString = atob(dataURI.split(',')[1]);
+                else
+                    byteString = unescape(dataURI.split(',')[1]);
+
+                // separate out the mime component
+                var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+                // write the bytes of the string to a typed array
+                var ia = new Uint8Array(byteString.length);
+                for (var i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+
+                return new Blob([ia], { type: mimeString });*/
+
+                var arr = dataURI.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], { type: mime });
+            };
+            var blob = dataURItoBlob(image);
+            var fd = new FormData();
+            fd.append("myFile", blob, "image.jpg");
+            console.log("fd: " + fd);
+
             var q = $q.defer();
+            $.ajax({
+                method: "POST",
+                processData: false,
+                url: "https://api.cloudsightapi.com/image_requests",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", "CloudSight " + key);
+                },
+                data: {
+                    "image_request[image]": fd,
+                    //"image_request[remote_image_url]": "http://pf.pfgcdn.net/sites/poltronafrau.com/files/styles/scheda_prodotto_gallery/public/content/catalogo/any_case/immagini/anycase.jpg",
+                    "image_request[locale]": "en-US"
+                },
+                success: function (r) {
+                    q.resolve(r);
+                },
+                error: function (err) {
+                    q.reject(err);
+                }
+            });
+            return q.promise;
+            /*$http.defaults.headers.common.Authorization = "CloudSight " + key;
+            return $http({
+                method: "POST",
+                //data: { "image_request[image]": fd, "image_request[locale]": "en-US" },
+                data: { "image_request[remote_image_url]": "http://1.static.img-dpreview.com/files/p/E~TS520x0~articles/3981114200/EV-NX500_002_Front_Brown.jpeg", "image_request[locale]": "en-US" },
+                url: "https://api.cloudsightapi.com/image_requests"
+            });*/
+            /*var q = $q.defer();
 
             var win = function (r) { q.resolve(r); };
             var fail = function (err) { q.reject(err); };
@@ -89,7 +148,7 @@ angular.module("VisualSearch", ["ionic"])
             var ft = new FileTransfer();
             ft.upload(fileURI, encodeURI("https://api.cloudsightapi.com/image_requests"), win, fail, options, true);
 
-            return q.promise;
+            return q.promise;*/
         }
     };
 }])
@@ -164,7 +223,7 @@ angular.module("VisualSearch", ["ionic"])
             options.correctOrientation = false;
             options.saveToPhotoAlbum = $scope.settings.saveToAlbum;
         }
-        if (($scope.activeService.name === "GoogleCloudVision") || ($scope.activeService.name === "MetaMind")) {
+        if ($scope.activeService.name !== "JustVisual") {
             options.destinationType = navigator.camera.DestinationType.DATA_URL; // DATA_URL, FILE_URI, NATIVE_URI
         }
         else {
@@ -172,7 +231,7 @@ angular.module("VisualSearch", ["ionic"])
         }
         Camera.getPicture(options).then(function (image) {
             console.log("Image: " + image);
-            if (($scope.activeService.name === "GoogleCloudVision") || ($scope.activeService.name === "MetaMind")) {
+            if ($scope.activeService.name !== "JustVisual") {
                 $scope.lastPhoto = "data:image/jpeg;base64," + image;
             }
             else {
@@ -216,8 +275,9 @@ angular.module("VisualSearch", ["ionic"])
                     });
                     break;
                 case "CloudSight":
-                    Search.cloudSight(image, $scope.activeService.key).then(function (result) {
-                        $scope.results = JSON.parse(result.response);
+                    Search.cloudSight($scope.lastPhoto, $scope.activeService.key).then(function (result) {
+                        //$scope.results = JSON.parse(result.response);
+                        console.log("Token: " + result.token);
                     }, function (err) {
                         console.log(err);
                         alert(err);
