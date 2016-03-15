@@ -76,6 +76,52 @@ angular.module("VisualSearch", ["ionic"])
 
             return q.promise;
         },
+        imagga: function (fileURI, key, endpoint) {
+            console.log("imagga " + fileURI);
+            var i = fileURI.indexOf('?');
+            console.log(i);
+            if (i > 0) { // Ha ?qualcosa dopo il nome del file, da togliere
+                fileURI = fileURI.substr(0, i);
+            }
+            console.log("imagga " + fileURI);
+            var q = $q.defer();
+
+            var win = function (r) {
+                //response:{"status": "error", "message": "No valid files received for uploading."}
+                //response:{"status": "success", "uploaded": [{"id": "83b31dec5efbc8443414093ab7668363", "filename": "1458077576115.jpg"}]}
+                var result = JSON.parse(r.response);
+                if (result.status === "success") {
+                    var id = result.uploaded[0].id;
+                    console.log(id);
+                    $http.defaults.headers.common.Authorization = key;
+                    $http({
+                        method: "GET",
+                        url: "https://api.imagga.com/v1/" + endpoint + "?content=" + id
+                    }).then(function (r) {
+                        q.resolve(r);
+                    }, function (err) {
+                        q.reject(err);
+                    });
+                }
+                else {
+                    q.reject(r);
+                }
+            };
+            var fail = function (err) { q.reject(err); };
+
+            var options = new FileUploadOptions();
+            options.fileKey = "file";
+            options.fileName = fileURI.substr(fileURI.lastIndexOf('/') + 1);
+            options.mimeType = "image/jpeg";
+            options.httpMethod = "POST";
+            //options.params = {}; // if we need to send parameters to the server request
+            options.headers = {"Authorization": key};
+
+            var ft = new FileTransfer();
+            ft.upload(fileURI, encodeURI("https://api.imagga.com/v1/content"), win, fail, options, true);
+
+            return q.promise;
+        },
         cloudSight: function (image, key) {
             var q = $q.defer();
             $.ajax({
@@ -112,6 +158,11 @@ angular.module("VisualSearch", ["ionic"])
                 { name: "Product", value: "" }
             ]
         },*/
+        {
+            name: "Imagga", key: "Basic YWNjX2YzMDMyOTkxNzUwODY1Mzo5N2U0YmI4ZjYxMDBlMjc2M2M4ZjNhOTg3YWM2ZDk0Zg==", sets: [
+                { name: "Tagging", value: "tagging" }
+            ]
+        },
         {
             name: "GoogleCloudVision", key: "AIzaSyA3CSP33Kkj0FN1ypV7UeS_BhEcQjqLzsI", sets: [
                 { name: "Label Detection", value: "LABEL_DETECTION" },
@@ -173,7 +224,7 @@ angular.module("VisualSearch", ["ionic"])
             options.correctOrientation = false;
             options.saveToPhotoAlbum = $scope.settings.saveToAlbum;
         }
-        if ($scope.activeService.name !== "JustVisual") {
+        if (($scope.activeService.name !== "JustVisual") && ($scope.activeService.name !== "Imagga")) {
             options.destinationType = navigator.camera.DestinationType.DATA_URL; // DATA_URL, FILE_URI, NATIVE_URI
         }
         else {
@@ -181,7 +232,7 @@ angular.module("VisualSearch", ["ionic"])
         }
         Camera.getPicture(options).then(function (image) {
             console.log("Image: " + image);
-            if ($scope.activeService.name !== "JustVisual") {
+            if (($scope.activeService.name !== "JustVisual") && ($scope.activeService.name !== "Imagga")) {
                 $scope.lastPhoto = "data:image/jpeg;base64," + image;
             }
             else {
@@ -218,6 +269,19 @@ angular.module("VisualSearch", ["ionic"])
                     Search.justVisual(image, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
                         $scope.results = JSON.parse(result.response);
                     }, function (err) {
+                        console.log(err);
+                        alert(err);
+                    }).finally(function () {
+                        $scope.hideLoading($ionicLoading);
+                    });
+                    break;
+                case "Imagga":
+                    Search.imagga(image, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
+                        console.log("SUCCESS");
+                        console.log(result);
+                        //$scope.results = JSON.parse(result.response);
+                    }, function (err) {
+                        console.log("FAIL");
                         console.log(err);
                         alert(err);
                     }).finally(function () {
