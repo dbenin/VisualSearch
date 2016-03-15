@@ -277,6 +277,7 @@ angular.module("VisualSearch", ["ionic"])
                     break;
                 case "Imagga":
                     Search.imagga(image, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
+                        $scope.results = result.data.results[0];
                         console.log("SUCCESS");
                         console.log(result);
                         //$scope.results = JSON.parse(result.response);

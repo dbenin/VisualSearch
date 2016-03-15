@@ -89,6 +89,13 @@
                             </ion-item>
                         </ion-list>
 
+                        <!--Imagga-->
+                        <ion-list>
+                            <ion-item ng-repeat="tag in results.tags">
+                                <p>Tag: {{tag.tag}}, confidence: {{tag.confidence.toFixed(1)}}%</p>
+                            </ion-item>
+                        </ion-list>
+
                     </div>
                 </ion-content>
             </ion-side-menu-content>
