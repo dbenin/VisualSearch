@@ -73,48 +73,17 @@ angular.module("VisualSearch", ["ionic"])
             return q.promise;
         },
         cloudSight: function (image, key) {
-            console.log("CS image: " + image);
-            //http://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata
-            var dataURItoBlob = function (dataURI) {
-                // convert base64/URLEncoded data component to raw binary data held in a string
-                /*var byteString;
-                if (dataURI.split(',')[0].indexOf('base64') >= 0)
-                    byteString = atob(dataURI.split(',')[1]);
-                else
-                    byteString = unescape(dataURI.split(',')[1]);
-
-                // separate out the mime component
-                var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-
-                // write the bytes of the string to a typed array
-                var ia = new Uint8Array(byteString.length);
-                for (var i = 0; i < byteString.length; i++) {
-                    ia[i] = byteString.charCodeAt(i);
-                }
-
-                return new Blob([ia], { type: mimeString });*/
-
-                var arr = dataURI.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-                while (n--) {
-                    u8arr[n] = bstr.charCodeAt(n);
-                }
-                return new Blob([u8arr], { type: mime });
-            };
-            var blob = dataURItoBlob(image);
-            var fd = new FormData();
-            fd.append("myFile", blob, "image.jpg");
-            console.log("fd: " + fd);
-
             var q = $q.defer();
             $.ajax({
-                method: "POST",
+                type: "POST",
                 processData: false,
+                contentType: false,
                 url: "https://api.cloudsightapi.com/image_requests",
                 beforeSend: function (xhr) {
                     xhr.setRequestHeader("Authorization", "CloudSight " + key);
                 },
                 data: {
-                    "image_request[image]": fd,
+                    "image_request[image]": image,
                     //"image_request[remote_image_url]": "http://pf.pfgcdn.net/sites/poltronafrau.com/files/styles/scheda_prodotto_gallery/public/content/catalogo/any_case/immagini/anycase.jpg",
                     "image_request[locale]": "en-US"
                 },
@@ -126,30 +95,6 @@ angular.module("VisualSearch", ["ionic"])
                 }
             });
             return q.promise;
-            /*$http.defaults.headers.common.Authorization = "CloudSight " + key;
-            return $http({
-                method: "POST",
-                //data: { "image_request[image]": fd, "image_request[locale]": "en-US" },
-                data: { "image_request[remote_image_url]": "http://1.static.img-dpreview.com/files/p/E~TS520x0~articles/3981114200/EV-NX500_002_Front_Brown.jpeg", "image_request[locale]": "en-US" },
-                url: "https://api.cloudsightapi.com/image_requests"
-            });*/
-            /*var q = $q.defer();
-
-            var win = function (r) { q.resolve(r); };
-            var fail = function (err) { q.reject(err); };
-
-            var options = new FileUploadOptions();
-            options.fileKey = "file";
-            options.fileName = fileURI.substr(fileURI.lastIndexOf('/') + 1);
-            options.mimeType = "image/jpeg";
-            options.httpMethod = "POST";
-            options.params = { "image_request[image]": "@"+options.filename, "image_request[locale]": "en-US" };
-            options.headers = { "Authorization": "CloudSight " + key };
-
-            var ft = new FileTransfer();
-            ft.upload(fileURI, encodeURI("https://api.cloudsightapi.com/image_requests"), win, fail, options, true);
-
-            return q.promise;*/
         }
     };
 }])
@@ -158,11 +103,11 @@ angular.module("VisualSearch", ["ionic"])
 
     // Load or initialize services
     $scope.services = [
-        {
+        /*{
             name: "CloudSight", key: "Q-mo9tM_bf4fGlaJaAoZ8g", sets: [
                 { name: "Product", value: "" }
             ]
-        },
+        },*/
         {
             name: "GoogleCloudVision", key: "AIzaSyA3CSP33Kkj0FN1ypV7UeS_BhEcQjqLzsI", sets: [
                 { name: "Label Detection", value: "LABEL_DETECTION" },
