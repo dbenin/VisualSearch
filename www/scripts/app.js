@@ -76,6 +76,13 @@ angular.module("VisualSearch", ["ionic"])
 
             return q.promise;
         },
+        getImaggaCategorizers: function (key) {
+            $http.defaults.headers.common.Authorization = key;
+            return $http({
+                method: "GET",
+                url: "https://api.imagga.com/v1/categorizers"
+            });
+        },
         imagga: function (fileURI, key, endpoint) {
             console.log("imagga " + fileURI);
             var i = fileURI.indexOf('?');
@@ -122,8 +129,8 @@ angular.module("VisualSearch", ["ionic"])
 
             return q.promise;
         },
-        cloudSight: function (image, key) {
-            var q = $q.defer();
+        cloudSight: function (fileURI, key) {
+            /*var q = $q.defer();
             $.ajax({
                 type: "POST",
                 processData: false,
@@ -144,6 +151,23 @@ angular.module("VisualSearch", ["ionic"])
                     q.reject(err);
                 }
             });
+            return q.promise;*/
+            var q = $q.defer();
+
+            var win = function (r) { q.resolve(r); };
+            var fail = function (err) { q.reject(err); };
+
+            var options = new FileUploadOptions();
+            options.fileKey = "file";
+            options.fileName = fileURI.substr(fileURI.lastIndexOf('/') + 1);
+            options.mimeType = "image/jpeg";
+            options.httpMethod = "POST";
+            options.params = {}; // if we need to send parameters to the server request
+            options.headers = { "Authorization": "CloudSight " + key };
+
+            var ft = new FileTransfer();
+            ft.upload(fileURI, encodeURI("https://api.cloudsightapi.com/image_requests"), win, fail, options, true);
+
             return q.promise;
         }
     };
@@ -224,7 +248,7 @@ angular.module("VisualSearch", ["ionic"])
             options.correctOrientation = false;
             options.saveToPhotoAlbum = $scope.settings.saveToAlbum;
         }
-        if (($scope.activeService.name !== "JustVisual") && ($scope.activeService.name !== "Imagga")) {
+        if (($scope.activeService.name === "MetaMind") || ($scope.activeService.name === "GoogleCloudVision")) {
             options.destinationType = navigator.camera.DestinationType.DATA_URL; // DATA_URL, FILE_URI, NATIVE_URI
         }
         else {
@@ -232,7 +256,7 @@ angular.module("VisualSearch", ["ionic"])
         }
         Camera.getPicture(options).then(function (image) {
             console.log("Image: " + image);
-            if (($scope.activeService.name !== "JustVisual") && ($scope.activeService.name !== "Imagga")) {
+            if (($scope.activeService.name === "MetaMind") || ($scope.activeService.name === "GoogleCloudVision")) {
                 $scope.lastPhoto = "data:image/jpeg;base64," + image;
             }
             else {
@@ -276,6 +300,13 @@ angular.module("VisualSearch", ["ionic"])
                     });
                     break;
                 case "Imagga":
+                    /*Search.getImaggaCategorizers($scope.activeService.key).then(function (r) {
+                        console.log("Categorizers: " + JSON.stringify(r));
+                    }, function (err) {
+                        console.log(err);
+                    }).finally(function () {
+                        $scope.hideLoading($ionicLoading);
+                    });*/
                     Search.imagga(image, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
                         $scope.results = result.data.results[0];
                         console.log("SUCCESS");
