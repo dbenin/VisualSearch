@@ -100,9 +100,9 @@
                 </ion-header-bar>
                 <ion-content>
                     <ion-list>
-                        <ion-item class="item-divider" ng-repeat="service in services">
+                        <ion-item class="item-divider" ng-repeat="service in services" ng-init="serviceIndex = $index">
                             {{service.name}}
-                            <ion-item ng-repeat="set in service.sets" ng-click="selectService(service, $index)" ng-class="{active: activeSet.name == set.name}">
+                            <ion-item ng-repeat="set in service.sets" ng-click="selectService(serviceIndex, $index)" ng-class="{active: activeSet.name == set.name}">
                                 {{set.name}}
                             </ion-item>
                         </ion-item>

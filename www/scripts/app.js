@@ -8,11 +8,15 @@ angular.module("VisualSearch", ["ionic"])
  */
 .factory("Storage", function () {
     return {
-        getLastActiveIndex: function () {
-            return parseInt(window.localStorage['lastActiveService']) || 0;
+        getLastActiveService: function () {
+            return parseInt(window.localStorage['lastActiveServiceIndex']) || 0;
         },
-        setLastActive: function (index) {
-            window.localStorage['lastActiveService'] = index;
+        getLastActiveSet: function () {
+            return parseInt(window.localStorage['lastActiveSetIndex']) || 0;
+        },
+        setLastActive: function (serviceIndex, setIndex) {
+            window.localStorage['lastActiveServiceIndex'] = serviceIndex;
+            window.localStorage['lastActiveSetIndex'] = setIndex;
         }
     };
 })
@@ -99,7 +103,7 @@ angular.module("VisualSearch", ["ionic"])
     };
 }])
 
-.controller('MainController', function ($scope, $ionicModal, Camera, Search, $ionicSideMenuDelegate, $ionicLoading) {
+.controller('MainController', function ($scope, $ionicModal, Storage, Camera, Search, $ionicSideMenuDelegate, $ionicLoading) {
 
     // Load or initialize services
     $scope.services = [
@@ -135,10 +139,10 @@ angular.module("VisualSearch", ["ionic"])
     $scope.settings = { saveToAlbum: false };
 
     // Grab the last active, or the first service and set
-    //$scope.activeService = $scope.services[Storage.getLastActiveService()];
-    //$scope.activeSet = $scope.activeService.sets[Storage.getLastActiveSet()];
-    $scope.activeService = $scope.services[0];
-    $scope.activeSet = $scope.services[0].sets[0];
+    $scope.activeService = $scope.services[Storage.getLastActiveService()];
+    $scope.activeSet = $scope.activeService.sets[Storage.getLastActiveSet()];
+    //$scope.activeService = $scope.services[0];
+    //$scope.activeSet = $scope.services[0].sets[0];
 
     $scope.showLoading = function () {
         $ionicLoading.show({
@@ -240,11 +244,12 @@ angular.module("VisualSearch", ["ionic"])
     };
 
     // Called to select the given service
-    $scope.selectService = function (service, index) {
-        $scope.activeService = service;
-        $scope.activeSet = service.sets[index];
+    $scope.selectService = function (serviceIndex, setIndex) {
+        //console.log(service + " " + index);
+        $scope.activeService = $scope.services[serviceIndex];
+        $scope.activeSet = $scope.activeService.sets[setIndex];
         //console.log("Active service: " + $scope.activeService.name);
-        //Services.setLastActiveIndex(index);
+        Storage.setLastActive(serviceIndex, setIndex);
 
         $scope.results = {};
 
