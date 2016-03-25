@@ -50,7 +50,8 @@ angular.module("VisualSearch", ["ionic"])
         metaMindDb: function (component) {
             return $http({
                 method: "GET",
-                url: "http://172.16.82.56:1895/api/Products?component=" + component
+                url: "http://172.16.82.56/test/api/Products?component=" + component
+                //url: "http://172.16.82.56/test/api/Values"
             });
         },
         metaMind: function (image, key, classifier) {
@@ -292,7 +293,13 @@ angular.module("VisualSearch", ["ionic"])
                             var component = result.data.predictions[0].class_name;
                             console.log("METAMIND CUSTOM " + component);
                             Search.metaMindDb(component).then(function (r) {
-                                console.log("SUCCESSO" + r);
+                                console.log("SUCCESSO");
+                                var s = "Il componente " + component + " è parte dei seguenti prodotti:\n";
+                                for (var i = 0; i < r.data.length; i++) {
+                                    s = s + "prodotto: " + r.data[i].Name + ", in quantità: " + r.data[i].Quantity + "\n";
+                                }
+                                alert(s);
+                                //console.log(r.data)
                             }, function (err) {
                                 console.log("FAIL" + err.data)
                                 //alert(err);
