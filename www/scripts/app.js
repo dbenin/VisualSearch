@@ -47,6 +47,12 @@ angular.module("VisualSearch", ["ionic"])
                 url: "https://vision.googleapis.com/v1/images:annotate?key=" + key
             });
         },
+        metaMindDb: function (component) {
+            return $http({
+                method: "GET",
+                url: "http://172.16.82.56:1895/api/Products?component=" + component
+            });
+        },
         metaMind: function (image, key, classifier) {
             if (isNaN(classifier)) {//aggiungo le virgolette al classifier se non e' custom (quindi non e' un numero ma una stringa)
                 classifier = '"' + classifier + '"';
@@ -282,6 +288,16 @@ angular.module("VisualSearch", ["ionic"])
                     Search.metaMind($scope.lastPhoto, $scope.activeService.key, $scope.activeSet.value).then(function (result) {
                         $scope.results = result.data;
                         console.log(result);
+                        if (!isNaN($scope.activeSet.value)) {//ricerca custom integro risultati con db
+                            var component = result.data.predictions[0].class_name;
+                            console.log("METAMIND CUSTOM " + component);
+                            Search.metaMindDb(component).then(function (r) {
+                                console.log("SUCCESSO" + r);
+                            }, function (err) {
+                                console.log("FAIL" + err.data)
+                                //alert(err);
+                            });
+                        }
                     }, function (err) {
                         console.log(err);
                         alert(err.message);
