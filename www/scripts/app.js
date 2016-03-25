@@ -38,7 +38,7 @@ angular.module("VisualSearch", ["ionic"])
     };
 }])
 
-.factory("Search", ['$q', '$http', function ($q, $http) {
+.factory("Search", ['$q', '$http', '$timeout', function ($q, $http, $timeout) {
     return {
         googleCloudVision: function (image, key, type) {
             return $http({
@@ -137,39 +137,54 @@ angular.module("VisualSearch", ["ionic"])
             return q.promise;
         },
         cloudSight: function (fileURI, key) {
-            /*var q = $q.defer();
-            $.ajax({
-                type: "POST",
-                processData: false,
-                contentType: false,
-                url: "https://api.cloudsightapi.com/image_requests",
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader("Authorization", "CloudSight " + key);
-                },
-                data: {
-                    "image_request[image]": image,
-                    //"image_request[remote_image_url]": "http://pf.pfgcdn.net/sites/poltronafrau.com/files/styles/scheda_prodotto_gallery/public/content/catalogo/any_case/immagini/anycase.jpg",
-                    "image_request[locale]": "en-US"
-                },
-                success: function (r) {
-                    q.resolve(r);
-                },
-                error: function (err) {
-                    q.reject(err);
-                }
-            });
-            return q.promise;*/
+            console.log("cloudsight " + fileURI);
+            var i = fileURI.indexOf('?');
+            console.log(i);
+            if (i > 0) { // Ha ?qualcosa dopo il nome del file, da togliere
+                fileURI = fileURI.substr(0, i);
+            }
+            console.log("cloudsight " + fileURI);
             var q = $q.defer();
 
-            var win = function (r) { q.resolve(r); };
+            var win = function (r) {
+                var token = JSON.parse(r.response).token;
+                console.log("Token: " + token);
+                var done = false;
+                //while (!done) {
+                var polling = function () {
+                    $http.defaults.headers.common.Authorization = "CloudSight " + key;
+                    $http({
+                        method: "GET",
+                        url: "https://api.cloudsightapi.com/image_responses/" + token
+                    }).then(function (r) {
+                        if (r.data.status === "not completed") {
+                            console.log("Not completed...");
+                        }
+                        else {
+                            q.resolve(r);
+                            done = true;
+                        }
+                    }, function (err) {
+                        q.reject(err);
+                        done = true;
+                    });
+                };
+                $timeout(polling, 10000).then(function (r) {
+                    if (!done) {
+                        console.log("WTF polling again...");
+                        $timeout(polling, 10000);
+                    }
+                });
+                //}
+            };
             var fail = function (err) { q.reject(err); };
 
             var options = new FileUploadOptions();
-            options.fileKey = "file";
+            options.fileKey = "image_request[image]";
             options.fileName = fileURI.substr(fileURI.lastIndexOf('/') + 1);
             options.mimeType = "image/jpeg";
             options.httpMethod = "POST";
-            options.params = {}; // if we need to send parameters to the server request
+            options.params = { "image_request[locale]": "en-US" }; // if we need to send parameters to the server request
             options.headers = { "Authorization": "CloudSight " + key };
 
             var ft = new FileTransfer();
@@ -184,11 +199,11 @@ angular.module("VisualSearch", ["ionic"])
 
     // Load or initialize services
     $scope.services = [
-        /*{
+        {
             name: "CloudSight", key: "Q-mo9tM_bf4fGlaJaAoZ8g", sets: [
                 { name: "Product", value: "" }
             ]
-        },*/
+        },
         {
             name: "Imagga", key: "Basic YWNjX2YzMDMyOTkxNzUwODY1Mzo5N2U0YmI4ZjYxMDBlMjc2M2M4ZjNhOTg3YWM2ZDk0Zg==", sets: [
                 { name: "Tagging", value: "tagging" }
@@ -346,7 +361,7 @@ angular.module("VisualSearch", ["ionic"])
                 case "CloudSight":
                     Search.cloudSight($scope.lastPhoto, $scope.activeService.key).then(function (result) {
                         //$scope.results = JSON.parse(result.response);
-                        console.log("Token: " + result.token);
+                        console.log(result.data.status + " " + result.data.name);
                     }, function (err) {
                         console.log(err);
                         alert(err);
