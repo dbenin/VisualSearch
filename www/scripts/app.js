@@ -38,7 +38,7 @@ angular.module("VisualSearch", ["ionic"])
     };
 }])
 
-.factory("Search", ['$q', '$http', '$timeout', function ($q, $http, $timeout) {
+.factory("Search", ['$q', '$http', '$interval', function ($q, $http, $interval) {
     return {
         googleCloudVision: function (image, key, type) {
             return $http({
@@ -147,11 +147,10 @@ angular.module("VisualSearch", ["ionic"])
             var q = $q.defer();
 
             var win = function (r) {
+                var time = +new Date();
                 var token = JSON.parse(r.response).token;
                 console.log("Token: " + token);
-                var done = false;
-                //while (!done) {
-                var polling = function () {
+                var polling = $interval(function () {
                     $http.defaults.headers.common.Authorization = "CloudSight " + key;
                     $http({
                         method: "GET",
@@ -161,21 +160,18 @@ angular.module("VisualSearch", ["ionic"])
                             console.log("Not completed...");
                         }
                         else {
+                            r.data.time = (+new Date() - time) / 1000;//tempo trascorso, in secondi
                             q.resolve(r);
-                            done = true;
+                            stop();
                         }
                     }, function (err) {
                         q.reject(err);
-                        done = true;
+                        stop();
                     });
+                }, 2000);
+                var stop = function () {
+                    $interval.cancel(polling);
                 };
-                $timeout(polling, 10000).then(function (r) {
-                    if (!done) {
-                        console.log("WTF polling again...");
-                        $timeout(polling, 10000);
-                    }
-                });
-                //}
             };
             var fail = function (err) { q.reject(err); };
 
@@ -362,6 +358,7 @@ angular.module("VisualSearch", ["ionic"])
                     Search.cloudSight($scope.lastPhoto, $scope.activeService.key).then(function (result) {
                         //$scope.results = JSON.parse(result.response);
                         console.log(result.data.status + " " + result.data.name);
+                        alert("Status: " + result.data.status + "\nName: " + result.data.name + "\nPolling time: " + result.data.time + " seconds");
                     }, function (err) {
                         console.log(err);
                         alert(err);
