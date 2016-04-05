@@ -239,7 +239,7 @@ angular.module("VisualSearch", ["ionic"])
 
     $scope.showLoading = function () {
         $ionicLoading.show({
-            template: '<p>Searching...</p><ion-spinner icon="android" class="spinner-dark"></ion-spinner>'
+            template: '<p>Searching...</p><ion-spinner icon="circles" class="spinner-dark"></ion-spinner>'
         });
     };
 
