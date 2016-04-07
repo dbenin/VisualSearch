@@ -252,6 +252,7 @@ angular.module("VisualSearch", ["ionic"])
         // Setting the options object to take a picture either from album or camera
         var options = { // Common options
             //destinationType: navigator.camera.DestinationType.FILE_URI, // DATA_URL, FILE_URI, NATIVE_URI
+            correctOrientation: true,
             targetWidth: 320,
             targetHeight: 320
         };
@@ -263,7 +264,6 @@ angular.module("VisualSearch", ["ionic"])
             options.quality = 50; // 0-100
             options.sourceType = navigator.camera.PictureSourceType.CAMERA; // PHOTOLIBRARY, CAMERA, SAVEDPHOTOALBUM
             options.encodingType = navigator.camera.EncodingType.JPEG; // JPEG, PNG
-            options.correctOrientation = false;
             options.saveToPhotoAlbum = $scope.settings.saveToAlbum;
         }
         if (($scope.activeService.name === "MetaMind") || ($scope.activeService.name === "GoogleCloudVision")) {
@@ -312,7 +312,7 @@ angular.module("VisualSearch", ["ionic"])
                                 alert(s);
                                 //console.log(r.data)
                             }, function (err) {
-                                console.log("FAIL" + err.data)
+                                console.log("FAIL" + err.data);
                                 //alert(err);
                             });
                         }
