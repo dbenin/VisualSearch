@@ -58,7 +58,7 @@ angular.module("VisualSearch", ["ionic"])
             if (isNaN(classifier)) {//aggiungo le virgolette al classifier se non e' custom (quindi non e' un numero ma una stringa)
                 classifier = '"' + classifier + '"';
             }
-            $http.defaults.headers.common.Authorization = "Basic " + key;
+            $http.defaults.headers.common.Authorization = key;
             return $http({
                 method: "POST",
                 data: '{"classifier_id":' + classifier + ', "image_url": "' + image + '"}',
@@ -214,7 +214,7 @@ angular.module("VisualSearch", ["ionic"])
             ]
         },
         {
-            name: "MetaMind", key: "T2e0GexSpnGDPmxU4xj6kktMx89yl3aGxSGOd9jljRTe19xFYW", sets: [
+            name: "MetaMind", key: "Basic T2e0GexSpnGDPmxU4xj6kktMx89yl3aGxSGOd9jljRTe19xFYW", sets: [
                 { name: "General Classifier", value: "imagenet-1k-net" },
                 { name: "Food Classifier", value: "food-net" },
                 { name: "Custom Classifier", value: 41291 }
