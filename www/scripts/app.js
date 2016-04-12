@@ -383,6 +383,7 @@ angular.module("VisualSearch", ["ionic"])
         Storage.setLastActive(serviceIndex, setIndex);
 
         $scope.results = {};
+        $scope.lastPhoto = "";
 
         $ionicSideMenuDelegate.toggleLeft(false);
     };

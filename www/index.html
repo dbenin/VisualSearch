@@ -46,7 +46,8 @@
                             <button ng-click="getPhoto(false)" class="button button-block button-positive">Scatta</button>
                             <button ng-click="getPhoto(true)" class="button button-block button-positive">Carica</button>
                         </div>
-                        <img ng-src="{{lastPhoto}}" style="max-width: 100%">
+                        
+                        <img ng-show="lastPhoto !== ''"  ng-src="{{lastPhoto}}" style="max-width: 100%">
 
                         <!--JustVisual-->
                         <ion-list>
