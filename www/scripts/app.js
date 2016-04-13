@@ -48,6 +48,7 @@ angular.module("VisualSearch", ["ionic"])
             });
         },
         metaMindDb: function (component) {
+            console.log("prima del database");
             return $http({
                 method: "GET",
                 url: "http://172.16.82.56/test/api/Products?component=" + component
