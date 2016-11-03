@@ -202,12 +202,12 @@ angular.module("VisualSearch", ["ionic"])
             ]
         },
         {
-            name: "Imagga", key: "Basic YWNjX2YzMDMyOTkxNzUwODY1Mzo5N2U0YmI4ZjYxMDBlMjc2M2M4ZjNhOTg3YWM2ZDk0Zg==", sets: [
+            name: "Imagga", key: "", sets: [
                 { name: "Tagging", value: "tagging" }
             ]
         },
         {
-            name: "GoogleCloudVision", key: "AIzaSyA3CSP33Kkj0FN1ypV7UeS_BhEcQjqLzsI", sets: [
+            name: "GoogleCloudVision", key: "", sets: [
                 { name: "Label Detection", value: "LABEL_DETECTION" },
                 { name: "Landmark Detection", value: "LANDMARK_DETECTION" },
                 { name: "Logo Detection", value: "LOGO_DETECTION" },
@@ -215,14 +215,14 @@ angular.module("VisualSearch", ["ionic"])
             ]
         },
         {
-            name: "MetaMind", key: "Basic T2e0GexSpnGDPmxU4xj6kktMx89yl3aGxSGOd9jljRTe19xFYW", sets: [
+            name: "MetaMind", key: "", sets: [
                 { name: "General Classifier", value: "imagenet-1k-net" },
                 { name: "Food Classifier", value: "food-net" },
                 { name: "Custom Classifier", value: 41291 }
             ]
         },
         {
-            name: "JustVisual", key: "8b502b94-24f6-4b97-b33e-a78ad605da31", sets: [
+            name: "JustVisual", key: "", sets: [
                 { name: "Fashion", value: "http://style.vsapi01.com" },
                 { name: "Flowers & Plants", value: "http://garden.vsapi01.com" },
                 { name: "Furniture", value: "http://decor.vsapi01.com" },
